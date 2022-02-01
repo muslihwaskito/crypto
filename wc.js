@@ -186,3 +186,76 @@ window.addEventListener('load', async () => {
     document.querySelector("#btn-connect").addEventListener("click", onConnect);
     document.querySelector("#btn-disconnect").addEventListener("click", onDisconnect);
 });
+
+let isConnect = false;
+function buyCharacter(name) {
+    if (isConnect) {
+        Swal.fire({
+            title: 'Are you sure buy this avatar '+name+'?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              console.log('berhasil membeli')
+              buystt()
+            }
+          })
+    } else {
+        onConnect2()
+    }
+}
+
+async function onConnect2() {
+    try {
+        provider = await web3Modal.connect();
+    } catch (e) {
+        console.log("Could not get a wallet connection", e);
+        return;
+    }
+
+    // Subscribe to accounts change
+    provider.on("accountsChanged", (accounts) => {
+        fetchAccountData2();
+    });
+
+    // Subscribe to chainId change
+    provider.on("chainChanged", (chainId) => {
+        fetchAccountData2();
+    });
+
+    // Subscribe to networkId change
+    provider.on("networkChanged", (networkId) => {
+        fetchAccountData2();
+    });
+
+    await refreshAccountData2();
+}
+
+async function refreshAccountData2() {
+
+    await fetchAccountData2(provider);
+}
+
+async function fetchAccountData2() {
+
+    // Get a Web3 instance for the wallet
+    const web3 = new Web3(provider);
+
+    // Get connected chain id from Ethereum node
+    const chainId = await web3.eth.getChainId();
+    // Load chain information over an HTTP API
+    // const chainData = evmChains.getChain(chainId);
+    // document.querySelector("#network-name").textContent = chainData.name;
+
+    // Get list of accounts of the connected wallet
+    const accounts = await web3.eth.getAccounts();
+
+    // MetaMask does not give you all accounts, only the selected account
+    console.log("Got accounts", accounts);
+
+    isConnect = true
+}
